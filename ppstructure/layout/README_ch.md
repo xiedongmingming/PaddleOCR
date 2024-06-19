@@ -1,18 +1,18 @@
-简体中文 | [English](README.md)
+简体中文 | [ENGLISH](README.md)
 
 # 版面分析
 
 - [1. 简介](#1-简介)
 - [2. 快速开始](#2-快速开始)
 - [3. 安装](#3-安装)
-  - [3.1 安装PaddlePaddle](#31-安装paddlepaddle)
-  - [3.2 安装PaddleDetection](#32-安装paddledetection)
+  - [3.1 安装PADDLEPADDLE](#31-安装PADDLEPADDLE)
+  - [3.2 安装PADDLEDETECTION](#32-安装PADDLEDETECTION)
 - [4. 数据准备](#4-数据准备)
   - [4.1 英文数据集](#41-英文数据集)
   - [4.2 更多数据集](#42-更多数据集)
 - [5. 开始训练](#5-开始训练)
   - [5.1 启动训练](#51-启动训练)
-  - [5.2 FGD蒸馏训练](#52-fgd蒸馏训练)
+  - [5.2 FGD蒸馏训练](#52-FGD蒸馏训练)
 - [6. 模型评估与预测](#6-模型评估与预测)
   - [6.1 指标评估](#61-指标评估)
   - [6.2 测试版面分析结果](#62-测试版面分析结果)
@@ -22,7 +22,7 @@
 
 ## 1. 简介
 
-版面分析指的是对图片形式的文档进行区域划分，定位其中的关键区域，如文字、标题、表格、图片等。版面分析算法基于[PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection)的轻量模型PP-PicoDet进行开发，包含英文、中文、表格版面分析3类模型。其中，英文模型支持Text、Title、Tale、Figure、List5类区域的检测，中文模型支持Text、Title、Figure、Figure caption、Table、Table caption、Header、Footer、Reference、Equation10类区域的检测，表格版面分析支持Table区域的检测，版面分析效果如下图所示：
+版面分析指的是对图片形式的文档进行区域划分，定位其中的关键区域，如文字、标题、表格、图片等。版面分析算法基于[PADDLEDETECTION](https://github.com/PaddlePaddle/PaddleDetection)的轻量模型**PP-PICODET**进行开发，包含英文、中文、表格版面分析3类模型。其中，英文模型支持TEXT、TITLE、TALE、FIGURE、LIST 5类区域的检测，中文模型支持TEXT、TITLE、FIGURE、FIGURE CAPTION、TABLE、TABLE CAPTION、HEADER、FOOTER、REFERENCE、EQUATION 10类区域的检测，表格版面分析支持TABLE区域的检测，版面分析效果如下图所示：
 
 <div align="center">
     <img src="../docs/layout/layout.png" width="800">
@@ -30,14 +30,14 @@
 
 ## 2. 快速开始
 
-PP-Structure目前提供了中文、英文、表格三类文档版面分析模型，模型链接见 [models_list](../docs/models_list.md#1-版面分析模型)。也提供了whl包的形式方便快速使用，详见 [quickstart](../docs/quickstart.md)。
+PP-STRUCTURE目前提供了中文、英文、表格三类文档版面分析模型，模型链接见[MODELS_LIST](../docs/models_list.md#1-版面分析模型)。也提供了WHL包的形式方便快速使用，详见[QUICKSTART](../docs/quickstart.md)。
 
 
 ## 3. 安装
 
-### 3.1. 安装PaddlePaddle
+### 3.1. 安装PADDLEPADDLE
 
-- **（1) 安装PaddlePaddle**
+- **（1) 安装PADDLEPADDLE**
 
 ```bash
 python3 -m pip install --upgrade pip
@@ -50,9 +50,9 @@ python3 -m pip install "paddlepaddle>=2.3" -i https://mirror.baidu.com/pypi/simp
 ```
 更多需求，请参照[安装文档](https://www.paddlepaddle.org.cn/install/quick)中的说明进行操作。
 
-### 3.2. 安装PaddleDetection
+### 3.2. 安装PADDLEDETECTION
 
-- **（1）下载PaddleDetection源码**
+- **（1）下载PADDLEDETECTION源码**
 
 ```bash
 git clone https://github.com/PaddlePaddle/PaddleDetection.git
@@ -71,7 +71,7 @@ python3 -m pip install -r requirements.txt
 
 ### 4.1. 英文数据集
 
-下载文档分析数据集[PubLayNet](https://developer.ibm.com/exchanges/data/all/publaynet/)（数据集96G），包含5个类：`{0: "Text", 1: "Title", 2: "List", 3:"Table", 4:"Figure"}`
+下载文档分析数据集[PUBLAYNET](https://developer.ibm.com/exchanges/data/all/publaynet/)（数据集96G），包含5个类：`{0: "Text", 1: "Title", 2: "List", 3:"Table", 4:"Figure"}`
 
 ```
 # 下载数据
@@ -112,24 +112,22 @@ tar -xvf publaynet.tar.gz
 
 **标注格式：**
 
-json文件包含所有图像的标注，数据以字典嵌套的方式存放，包含以下key：
+JSON文件包含所有图像的标注，数据以字典嵌套的方式存放，包含以下KEY：
 
-- info，表示标注文件info。
-
-- licenses，表示标注文件licenses。
-
-- images，表示标注文件中图像信息列表，每个元素是一张图像的信息。如下为其中一张图像的信息：
+- info：表示标注文件INFO
+- licenses：表示标注文件LICENSES
+- images：表示标注文件中图像信息列表，每个元素是一张图像的信息。如下为其中一张图像的信息：
 
   ```
   {
       'file_name': 'PMC4055390_00006.jpg',    # file_name
-      'height': 601,                      # image height
-      'width': 792,                       # image width
-      'id': 341427                        # image id
+      'height': 601,                          # image height
+      'width': 792,                           # image width
+      'id': 341427                            # image id
   }
   ```
 
-- annotations，表示标注文件中目标物体的标注信息列表，每个元素是一个目标物体的标注信息。如下为其中一个目标物体的标注信息：
+- annotations：表示标注文件中目标物体的标注信息列表，每个元素是一个目标物体的标注信息。如下为其中一个目标物体的标注信息：
 
   ```
   {
@@ -146,37 +144,37 @@ json文件包含所有图像的标注，数据以字典嵌套的方式存放，�
 
 ### 4.2. 更多数据集
 
-我们提供了CDLA(中文版面分析)、TableBank(表格版面分析)等数据集的下连接，处理为上述标注文件json格式，即可以按相同方式进行训练。
+我们提供了CDLA(中文版面分析)、TABLEBANK(表格版面分析)等数据集的下连接，处理为上述标注文件JSON格式，即可以按相同方式进行训练。
 
-| dataset                                                      | 简介                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [cTDaR2019_cTDaR](https://cndplab-founder.github.io/cTDaR2019/) | 用于表格检测(TRACKA)和表格识别(TRACKB)。图片类型包含历史数据集(以cTDaR_t0开头，如cTDaR_t00872.jpg)和现代数据集(以cTDaR_t1开头，cTDaR_t10482.jpg)。 |
-| [IIIT-AR-13K](http://cvit.iiit.ac.in/usodi/iiitar13k.php)    | 手动注释公开的年度报告中的图形或页面而构建的数据集，包含5类：table, figure, natural image, logo, and signature |
-| [CDLA](https://github.com/buptlihang/CDLA)                   | 中文文档版面分析数据集，面向中文文献类（论文）场景，包含10类：Text、Title、Figure、Figure caption、Table、Table caption、Header、Footer、Reference、Equation |
-| [TableBank](https://github.com/doc-analysis/TableBank)       | 用于表格检测和识别大型数据集，包含Word和Latex2种文档格式     |
-| [DocBank](https://github.com/doc-analysis/DocBank)           | 使用弱监督方法构建的大规模数据集(500K文档页面)，用于文档布局分析，包含12类：Author、Caption、Date、Equation、Figure、Footer、List、Paragraph、Reference、Section、Table、Title |
+| dataset                                                      | 简介                                                                                                                                |
+| ------------------------------------------------------------ |-----------------------------------------------------------------------------------------------------------------------------------|
+| [cTDaR2019_cTDaR](https://cndplab-founder.github.io/cTDaR2019/) | 用于表格检测(TRACKA)和表格识别(TRACKB)。图片类型包含历史数据集(以CTDAR_T0开头，如CTDAR_T00872.JPG)和现代数据集(以CTDAR_T1开头，CTDAR_T10482.JPG)。                    |
+| [IIIT-AR-13K](http://cvit.iiit.ac.in/usodi/iiitar13k.php)    | 手动注释公开的年度报告中的图形或页面而构建的数据集，包含5类：TABLE, FIGURE, NATURAL IMAGE, LOGO, AND SIGNATURE                                                  |
+| [CDLA](https://github.com/buptlihang/CDLA)                   | 中文文档版面分析数据集，面向中文文献类（论文）场景，包含10类：TEXT、TITLE、FIGURE、FIGURE CAPTION、TABLE、TABLE CAPTION、HEADER、FOOTER、REFERENCE、EQUATION             |
+| [TableBank](https://github.com/doc-analysis/TableBank)       | 用于表格检测和识别大型数据集，包含WORD和LATEX2种文档格式                                                                                                 |
+| [DocBank](https://github.com/doc-analysis/DocBank)           | 使用弱监督方法构建的大规模数据集(500K文档页面)，用于文档布局分析，包含12类：AUTHOR、CAPTION、DATE、EQUATION、FIGURE、FOOTER、LIST、PARAGRAPH、REFERENCE、SECTION、TABLE、TITLE |
 
 
 ## 5. 开始训练
 
-提供了训练脚本、评估脚本和预测脚本，本节将以PubLayNet预训练模型为例进行讲解。
+提供了训练脚本、评估脚本和预测脚本，本节将以PUBLAYNET预训练模型为例进行讲解。
 
-如果不希望训练，直接体验后面的模型评估、预测、动转静、推理的流程，可以下载提供的预训练模型(PubLayNet数据集)，并跳过5.1和5.2。
+如果不希望训练，直接体验后面的模型评估、预测、动转静、推理的流程，可以下载提供的预训练模型(PUBLAYNET数据集)，并跳过5.1和5.2。
 
 ```
 mkdir pretrained_model
 cd pretrained_model
-# 下载PubLayNet预训练模型（直接体验模型评估、预测、动转静）
+# 下载PUBLAYNET预训练模型（直接体验模型评估、预测、动转静）
 wget https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_0_fgd_layout.pdparams
-# 下载PubLaynet推理模型（直接体验模型推理）
+# 下载PUBLAYNET推理模型（直接体验模型推理）
 wget https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_0_fgd_layout_infer.tar
 ```
 
-如果测试图片为中文，可以下载中文CDLA数据集的预训练模型，识别10类文档区域：Table、Figure、Figure caption、Table、Table caption、Header、Footer、Reference、Equation，在[版面分析模型](../docs/models_list.md)中下载`picodet_lcnet_x1_0_fgd_layout_cdla`模型的训练模型和推理模型。如果只检测图片中的表格区域，可以下载表格数据集的预训练模型，在[版面分析模型](../docs/models_list.md)中下载`picodet_lcnet_x1_0_fgd_layout_table`模型的训练模型和推理模型。
+如果测试图片为中文，可以下载中文CDLA数据集的预训练模型，识别10类文档区域：TABLE、FIGURE、FIGURE CAPTION、TABLE、TABLE CAPTION、HEADER、FOOTER、REFERENCE、EQUATION，在[版面分析模型](../docs/models_list.md)中下载`picodet_lcnet_x1_0_fgd_layout_cdla`模型的训练模型和推理模型。如果只检测图片中的表格区域，可以下载表格数据集的预训练模型，在[版面分析模型](../docs/models_list.md)中下载`picodet_lcnet_x1_0_fgd_layout_table`模型的训练模型和推理模型。
 
 ### 5.1. 启动训练
 
-使用PaddleDetection[版面分析配置文件](https://github.com/PaddlePaddle/PaddleDetection/tree/release/2.5/configs/picodet/legacy_model/application/layout_analysis)启动训练
+使用PADDLEDETECTION[版面分析配置文件](https://github.com/PaddlePaddle/PaddleDetection/tree/release/2.5/configs/picodet/legacy_model/application/layout_analysis)启动训练
 
 * 修改配置文件
 
@@ -215,7 +213,7 @@ TestDataset:
     anno_path: /root/publaynet/val.json
 ```
 
-* 开始训练，在训练时，会默认下载PP-PicoDet预训练模型，这里无需预先下载。
+* 开始训练，在训练时，会默认下载PP-PICODET预训练模型，这里无需预先下载。
 
 ```bash
 # GPU训练 支持单卡，多卡训练

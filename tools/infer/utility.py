@@ -791,12 +791,16 @@ def merge_fragmented(boxes, x_threshold=10, y_threshold=10):
 
 
 def check_gpu(use_gpu):
+
     if use_gpu and (
         not paddle.is_compiled_with_cuda() or paddle.device.get_device() == "cpu"
     ):
+
         use_gpu = False
+
     return use_gpu
 
 
 if __name__ == "__main__":
+
     pass

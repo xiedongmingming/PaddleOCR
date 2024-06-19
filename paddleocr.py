@@ -359,10 +359,13 @@ MODEL_URLS = {
 
 
 def parse_args(mMain=True):
+
     import argparse
 
     parser = init_args()
+
     parser.add_help = mMain
+
     parser.add_argument("--lang", type=str, default="ch")
     parser.add_argument("--det", type=str2bool, default=True)
     parser.add_argument("--rec", type=str2bool, default=True)
@@ -389,22 +392,32 @@ def parse_args(mMain=True):
     )
 
     for action in parser._actions:
+
         if action.dest in [
             "rec_char_dict_path",
             "table_char_dict_path",
             "layout_dict_path",
         ]:
+
             action.default = None
+
     if mMain:
+
         return parser.parse_args()
+
     else:
+
         inference_args_dict = {}
+
         for action in parser._actions:
+
             inference_args_dict[action.dest] = action.default
+
         return argparse.Namespace(**inference_args_dict)
 
 
 def parse_lang(lang):
+
     latin_lang = [
         "af",
         "az",
@@ -449,7 +462,9 @@ def parse_lang(lang):
         "french",
         "german",
     ]
+
     arabic_lang = ["ar", "fa", "ug", "ur"]
+
     cyrillic_lang = [
         "ru",
         "rs_cyrillic",
@@ -468,6 +483,7 @@ def parse_lang(lang):
         "lez",
         "tab",
     ]
+
     devanagari_lang = [
         "hi",
         "mr",
@@ -483,6 +499,7 @@ def parse_lang(lang):
         "sa",
         "bgc",
     ]
+
     if lang in latin_lang:
         lang = "latin"
     elif lang in arabic_lang:
@@ -491,11 +508,13 @@ def parse_lang(lang):
         lang = "cyrillic"
     elif lang in devanagari_lang:
         lang = "devanagari"
+
     assert (
         lang in MODEL_URLS["OCR"][DEFAULT_OCR_MODEL_VERSION]["rec"]
     ), "param lang must in {}, but got {}".format(
         MODEL_URLS["OCR"][DEFAULT_OCR_MODEL_VERSION]["rec"].keys(), lang
     )
+
     if lang == "ch":
         det_lang = "ch"
     elif lang == "structure":
@@ -504,10 +523,12 @@ def parse_lang(lang):
         det_lang = "en"
     else:
         det_lang = "ml"
+
     return lang, det_lang
 
 
 def get_model_config(type, version, model_type, lang):
+
     if type == "OCR":
         DEFAULT_MODEL_VERSION = DEFAULT_OCR_MODEL_VERSION
     elif type == "STRUCTURE":
@@ -516,23 +537,35 @@ def get_model_config(type, version, model_type, lang):
         raise NotImplementedError
 
     model_urls = MODEL_URLS[type]
+
     if version not in model_urls:
+
         version = DEFAULT_MODEL_VERSION
+
     if model_type not in model_urls[version]:
+
         if model_type in model_urls[DEFAULT_MODEL_VERSION]:
+
             version = DEFAULT_MODEL_VERSION
+
         else:
+
             logger.error(
                 "{} models is not support, we only support {}".format(
                     model_type, model_urls[DEFAULT_MODEL_VERSION].keys()
                 )
             )
+
             sys.exit(-1)
 
     if lang not in model_urls[version][model_type]:
+
         if lang in model_urls[DEFAULT_MODEL_VERSION][model_type]:
+
             version = DEFAULT_MODEL_VERSION
+
         else:
+
             logger.error(
                 "lang {} is not support, we only support {} for {} models".format(
                     lang,
@@ -540,12 +573,16 @@ def get_model_config(type, version, model_type, lang):
                     model_type,
                 )
             )
+
             sys.exit(-1)
+
     return model_urls[version][model_type][lang]
 
 
 def img_decode(content: bytes):
+
     np_arr = np.frombuffer(content, dtype=np.uint8)
+
     return cv2.imdecode(np_arr, cv2.IMREAD_UNCHANGED)
 
 
@@ -563,48 +600,85 @@ def check_img(img, alpha_color=(255, 255, 255)):
         return: numpy.array (h, w, 3) or list (p, h, w, 3) (p: page of pdf), boolean, boolean
     """
     flag_gif, flag_pdf = False, False
+
     if isinstance(img, bytes):
+
         img = img_decode(img)
+
     if isinstance(img, str):
+
         # download net image
         if is_link(img):
+
             download_with_progressbar(img, "tmp.jpg")
+
             img = "tmp.jpg"
+
         image_file = img
+
         img, flag_gif, flag_pdf = check_and_read(image_file)
+
         if not flag_gif and not flag_pdf:
+
             with open(image_file, "rb") as f:
+
                 img_str = f.read()
+
                 img = img_decode(img_str)
+
             if img is None:
+
                 try:
+
                     buf = BytesIO()
+
                     image = BytesIO(img_str)
+
                     im = Image.open(image)
+
                     rgb = im.convert("RGB")
+
                     rgb.save(buf, "jpeg")
+
                     buf.seek(0)
+
                     image_bytes = buf.read()
+
                     data_base64 = str(base64.b64encode(image_bytes), encoding="utf-8")
+
                     image_decode = base64.b64decode(data_base64)
+
                     img_array = np.frombuffer(image_decode, np.uint8)
+
                     img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+
                 except:
+
                     logger.error("error in loading image:{}".format(image_file))
+
                     return None, flag_gif, flag_pdf
+
         if img is None:
+
             logger.error("error in loading image:{}".format(image_file))
+
             return None, flag_gif, flag_pdf
+
     # single channel image array.shape:h,w
     if isinstance(img, np.ndarray) and len(img.shape) == 2:
+
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
     # four channel image array.shape:h,w,c
     if isinstance(img, np.ndarray) and len(img.shape) == 3 and img.shape[2] == 4:
+
         img = alpha_to_color(img, alpha_color)
+
     return img, flag_gif, flag_pdf
 
 
 class PaddleOCR(predict_system.TextSystem):
+
     def __init__(self, **kwargs):
         """
         paddleocr package
@@ -612,63 +686,85 @@ class PaddleOCR(predict_system.TextSystem):
             **kwargs: other params show in paddleocr --help
         """
         params = parse_args(mMain=False)
+
         params.__dict__.update(**kwargs)
+
         assert (
             params.ocr_version in SUPPORT_OCR_MODEL_VERSION
         ), "ocr_version must in {}, but get {}".format(
             SUPPORT_OCR_MODEL_VERSION, params.ocr_version
         )
+
         params.use_gpu = check_gpu(params.use_gpu)
 
         if not params.show_log:
+
             logger.setLevel(logging.INFO)
+
         self.use_angle_cls = params.use_angle_cls
+
         lang, det_lang = parse_lang(params.lang)
 
         # init model dir
         det_model_config = get_model_config("OCR", params.ocr_version, "det", det_lang)
+
         params.det_model_dir, det_url = confirm_model_dir_url(
             params.det_model_dir,
             os.path.join(BASE_DIR, "whl", "det", det_lang),
             det_model_config["url"],
         )
+
         rec_model_config = get_model_config("OCR", params.ocr_version, "rec", lang)
+
         params.rec_model_dir, rec_url = confirm_model_dir_url(
             params.rec_model_dir,
             os.path.join(BASE_DIR, "whl", "rec", lang),
             rec_model_config["url"],
         )
+
         cls_model_config = get_model_config("OCR", params.ocr_version, "cls", "ch")
+
         params.cls_model_dir, cls_url = confirm_model_dir_url(
             params.cls_model_dir,
             os.path.join(BASE_DIR, "whl", "cls"),
             cls_model_config["url"],
         )
+
         if params.ocr_version in ["PP-OCRv3", "PP-OCRv4"]:
             params.rec_image_shape = "3, 48, 320"
         else:
             params.rec_image_shape = "3, 32, 320"
+
         # download model if using paddle infer
         if not params.use_onnx:
+
             maybe_download(params.det_model_dir, det_url)
             maybe_download(params.rec_model_dir, rec_url)
             maybe_download(params.cls_model_dir, cls_url)
 
         if params.det_algorithm not in SUPPORT_DET_MODEL:
+
             logger.error("det_algorithm must in {}".format(SUPPORT_DET_MODEL))
+
             sys.exit(0)
+
         if params.rec_algorithm not in SUPPORT_REC_MODEL:
+
             logger.error("rec_algorithm must in {}".format(SUPPORT_REC_MODEL))
+
             sys.exit(0)
 
         if params.rec_char_dict_path is None:
+
             params.rec_char_dict_path = str(
                 Path(__file__).parent / rec_model_config["dict_path"]
             )
 
         logger.debug(params)
+
         # init det_model and rec_model
         super().__init__(params)
+
         self.page_num = params.page_num
 
     def ocr(
@@ -696,178 +792,271 @@ class PaddleOCR(predict_system.TextSystem):
             slice: use sliding window inference for large images, det and rec must be True. Requires int values for slice["horizontal_stride"], slice["vertical_stride"], slice["merge_x_thres"], slice["merge_y_thres] (See doc/doc_en/slice_en.md). Default is {}.
         """
         assert isinstance(img, (np.ndarray, list, str, bytes))
+
         if isinstance(img, list) and det == True:
+
             logger.error("When input a list of images, det must be false")
+
             exit(0)
+
         if cls == True and self.use_angle_cls == False:
+
             logger.warning(
                 "Since the angle classifier is not initialized, it will not be used during the forward process"
             )
 
         img, flag_gif, flag_pdf = check_img(img, alpha_color)
+
         # for infer pdf file
         if isinstance(img, list) and flag_pdf:
+
             if self.page_num > len(img) or self.page_num == 0:
                 imgs = img
             else:
                 imgs = img[: self.page_num]
+
         else:
+
             imgs = [img]
 
         def preprocess_image(_image):
+
             _image = alpha_to_color(_image, alpha_color)
+
             if inv:
+
                 _image = cv2.bitwise_not(_image)
+
             if bin:
+
                 _image = binarize_img(_image)
+
             return _image
 
         if det and rec:
+
             ocr_res = []
+
             for idx, img in enumerate(imgs):
+
                 img = preprocess_image(img)
+
                 dt_boxes, rec_res, _ = self.__call__(img, cls, slice)
+
                 if not dt_boxes and not rec_res:
+
                     ocr_res.append(None)
+
                     continue
+
                 tmp_res = [[box.tolist(), res] for box, res in zip(dt_boxes, rec_res)]
+
                 ocr_res.append(tmp_res)
+
             return ocr_res
+
         elif det and not rec:
+
             ocr_res = []
+
             for idx, img in enumerate(imgs):
+
                 img = preprocess_image(img)
+
                 dt_boxes, elapse = self.text_detector(img)
+
                 if dt_boxes.size == 0:
+
                     ocr_res.append(None)
+
                     continue
+
                 tmp_res = [box.tolist() for box in dt_boxes]
+
                 ocr_res.append(tmp_res)
+
             return ocr_res
+
         else:
+
             ocr_res = []
             cls_res = []
+
             for idx, img in enumerate(imgs):
+
                 if not isinstance(img, list):
+
                     img = preprocess_image(img)
+
                     img = [img]
+
                 if self.use_angle_cls and cls:
+
                     img, cls_res_tmp, elapse = self.text_classifier(img)
+
                     if not rec:
+
                         cls_res.append(cls_res_tmp)
+
                 rec_res, elapse = self.text_recognizer(img)
+
                 ocr_res.append(rec_res)
+
             if not rec:
+
                 return cls_res
+
             return ocr_res
 
 
 class PPStructure(StructureSystem):
+
     def __init__(self, **kwargs):
+
         params = parse_args(mMain=False)
+
         params.__dict__.update(**kwargs)
+
         assert (
             params.structure_version in SUPPORT_STRUCTURE_MODEL_VERSION
         ), "structure_version must in {}, but get {}".format(
             SUPPORT_STRUCTURE_MODEL_VERSION, params.structure_version
         )
+
         params.use_gpu = check_gpu(params.use_gpu)
-        params.mode = "structure"
+
 
         if not params.show_log:
+
             logger.setLevel(logging.INFO)
+
         lang, det_lang = parse_lang(params.lang)
+
         if lang == "ch":
             table_lang = "ch"
         else:
             table_lang = "en"
+
         if params.structure_version == "PP-Structure":
+
             params.merge_no_span_structure = False
 
         # init model dir
         det_model_config = get_model_config("OCR", params.ocr_version, "det", det_lang)
+
         params.det_model_dir, det_url = confirm_model_dir_url(
             params.det_model_dir,
             os.path.join(BASE_DIR, "whl", "det", det_lang),
             det_model_config["url"],
         )
+
         rec_model_config = get_model_config("OCR", params.ocr_version, "rec", lang)
+
         params.rec_model_dir, rec_url = confirm_model_dir_url(
             params.rec_model_dir,
             os.path.join(BASE_DIR, "whl", "rec", lang),
             rec_model_config["url"],
         )
+
         table_model_config = get_model_config(
             "STRUCTURE", params.structure_version, "table", table_lang
         )
+
         params.table_model_dir, table_url = confirm_model_dir_url(
             params.table_model_dir,
             os.path.join(BASE_DIR, "whl", "table"),
             table_model_config["url"],
         )
+
         layout_model_config = get_model_config(
             "STRUCTURE", params.structure_version, "layout", lang
         )
+
         params.layout_model_dir, layout_url = confirm_model_dir_url(
             params.layout_model_dir,
             os.path.join(BASE_DIR, "whl", "layout"),
             layout_model_config["url"],
         )
+
         # download model
         if not params.use_onnx:
+            #
             maybe_download(params.det_model_dir, det_url)
             maybe_download(params.rec_model_dir, rec_url)
             maybe_download(params.table_model_dir, table_url)
             maybe_download(params.layout_model_dir, layout_url)
 
         if params.rec_char_dict_path is None:
+
             params.rec_char_dict_path = str(
                 Path(__file__).parent / rec_model_config["dict_path"]
             )
+
         if params.table_char_dict_path is None:
+
             params.table_char_dict_path = str(
                 Path(__file__).parent / table_model_config["dict_path"]
             )
+
         if params.layout_dict_path is None:
+
             params.layout_dict_path = str(
                 Path(__file__).parent / layout_model_config["dict_path"]
             )
+
         logger.debug(params)
+
         super().__init__(params)
 
-    def __call__(
+    def __call__( # 对外接口
         self,
-        img,
+        img, # 待处理的图片
         return_ocr_result_in_table=False,
         img_idx=0,
         alpha_color=(255, 255, 255),
     ):
+
         img, flag_gif, flag_pdf = check_img(img, alpha_color)
+
         if isinstance(img, list) and flag_pdf:
+
             res_list = []
+
             for index, pdf_img in enumerate(img):
+
                 logger.info("processing {}/{} page:".format(index + 1, len(img)))
+
                 res, _ = super().__call__(
                     pdf_img, return_ocr_result_in_table, img_idx=index
                 )
+
                 res_list.append(res)
+
             return res_list
+
         res, _ = super().__call__(img, return_ocr_result_in_table, img_idx=img_idx)
+
         return res
 
 
-def main():
+def main(): # 入口程序
     # for cmd
     args = parse_args(mMain=True)
+
     image_dir = args.image_dir
+
     if is_link(image_dir):
         download_with_progressbar(image_dir, "tmp.jpg")
         image_file_list = ["tmp.jpg"]
     else:
         image_file_list = get_image_file_list(args.image_dir)
+
     if len(image_file_list) == 0:
+
         logger.error("no images find in {}".format(args.image_dir))
+
         return
+
     if args.type == "ocr":
         engine = PaddleOCR(**(args.__dict__))
     elif args.type == "structure":
@@ -876,9 +1065,13 @@ def main():
         raise NotImplementedError
 
     for img_path in image_file_list:
+
         img_name = os.path.basename(img_path).split(".")[0]
+
         logger.info("{}{}{}".format("*" * 10, img_path, "*" * 10))
+
         if args.type == "ocr":
+
             result = engine.ocr(
                 img_path,
                 det=args.det,
@@ -888,80 +1081,129 @@ def main():
                 inv=args.invert,
                 alpha_color=args.alphacolor,
             )
+
             if result is not None:
+
                 lines = []
+
                 for res in result:
+
                     for line in res:
+
                         logger.info(line)
+
                         lines.append(pprint.pformat(line) + "\n")
+
                 if args.savefile:
+
                     if os.path.exists(args.output) is False:
+
                         os.mkdir(args.output)
+
                     outfile = args.output + "/" + img_name + ".txt"
+
                     with open(outfile, "w", encoding="utf-8") as f:
+
                         f.writelines(lines)
 
         elif args.type == "structure":
+
             img, flag_gif, flag_pdf = check_and_read(img_path)
+
             if not flag_gif and not flag_pdf:
+
                 img = cv2.imread(img_path)
 
             if args.recovery and args.use_pdf2docx_api and flag_pdf:
+
                 try_import("pdf2docx")
+
                 from pdf2docx.converter import Converter
 
                 docx_file = os.path.join(args.output, "{}.docx".format(img_name))
+
                 cv = Converter(img_path)
+
                 cv.convert(docx_file)
                 cv.close()
+
                 logger.info("docx save to {}".format(docx_file))
+
                 continue
 
             if not flag_pdf:
+
                 if img is None:
+
                     logger.error("error in loading image:{}".format(img_path))
+
                     continue
+
                 img_paths = [[img_path, img]]
+
             else:
+
                 img_paths = []
+
                 for index, pdf_img in enumerate(img):
+
                     os.makedirs(os.path.join(args.output, img_name), exist_ok=True)
+
                     pdf_img_path = os.path.join(
                         args.output, img_name, img_name + "_" + str(index) + ".jpg"
                     )
+
                     cv2.imwrite(pdf_img_path, pdf_img)
+
                     img_paths.append([pdf_img_path, pdf_img])
 
             all_res = []
+
             for index, (new_img_path, img) in enumerate(img_paths):
+
                 logger.info("processing {}/{} page:".format(index + 1, len(img_paths)))
+
                 result = engine(img, img_idx=index)
+
                 save_structure_res(result, args.output, img_name, index)
 
                 if args.recovery and result != []:
+
                     from copy import deepcopy
+
                     from ppstructure.recovery.recovery_to_doc import sorted_layout_boxes
 
                     h, w, _ = img.shape
+
                     result_cp = deepcopy(result)
+
                     result_sorted = sorted_layout_boxes(result_cp, w)
+
                     all_res += result_sorted
 
             if args.recovery and all_res != []:
+
                 try:
+
                     from ppstructure.recovery.recovery_to_doc import convert_info_docx
 
                     convert_info_docx(img, all_res, args.output, img_name)
+
                 except Exception as ex:
+
                     logger.error(
                         "error in layout recovery image:{}, err msg: {}".format(
                             img_name, ex
                         )
                     )
+
                     continue
 
             for item in all_res:
+
                 item.pop("img")
                 item.pop("res")
+
                 logger.info(item)
+
             logger.info("result save to {}".format(args.output))
