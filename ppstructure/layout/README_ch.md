@@ -131,7 +131,7 @@ JSON文件包含所有图像的标注，数据以字典嵌套的方式存放，�
 
   ```
   {
-
+  
       'segmentation':             # 物体的分割标注
       'area': 60518.099043117836, # 物体的区域面积
       'iscrowd': 0,               # iscrowd
@@ -164,8 +164,10 @@ JSON文件包含所有图像的标注，数据以字典嵌套的方式存放，�
 ```
 mkdir pretrained_model
 cd pretrained_model
+
 # 下载PUBLAYNET预训练模型（直接体验模型评估、预测、动转静）
 wget https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_0_fgd_layout.pdparams
+
 # 下载PUBLAYNET推理模型（直接体验模型推理）
 wget https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_0_fgd_layout_infer.tar
 ```
@@ -185,6 +187,7 @@ wget https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_
 
 ```yaml
 metric: COCO
+
 # 类别数
 num_classes: 5
 
@@ -217,7 +220,7 @@ TestDataset:
 
 ```bash
 # GPU训练 支持单卡，多卡训练
-# 训练日志会自动保存到 log 目录中
+# 训练日志会自动保存到LOG目录中
 
 # 单卡训练
 export CUDA_VISIBLE_DEVICES=0
@@ -232,9 +235,9 @@ python3 -m paddle.distributed.launch --gpus '0,1,2,3'  tools/train.py \
     --eval
 ```
 
-**注意：**如果训练时显存out memory，将TrainReader中batch_size调小，同时LearningRate中base_lr等比例减小。发布的config均由8卡训练得到，如果改变GPU卡数为1，那么base_lr需要减小8倍。
+**注意：**如果训练时显存OUT MEMORY，将TRAINREADER中BATCH_SIZE调小，同时LEARNINGRATE中BASE_LR等比例减小。发布的CONFIG均由8卡训练得到，如果改变GPU卡数为1，那么BASE_LR需要减小8倍。
 
-正常启动训练后，会看到以下log输出：
+正常启动训练后，会看到以下LOG输出：
 
 ```
 [08/15 04:02:30] ppdet.utils.checkpoint INFO: Finish loading model weights: /root/.cache/paddle/weights/LCNet_x1_0_pretrained.pdparams
@@ -250,7 +253,7 @@ python3 -m paddle.distributed.launch --gpus '0,1,2,3'  tools/train.py \
 
 ### 5.2. FGD蒸馏训练
 
-PaddleDetection支持了基于FGD([Focal and Global Knowledge Distillation for Detectors](https://arxiv.org/abs/2111.11837v1))蒸馏的目标检测模型训练过程，FGD蒸馏分为两个部分`Focal`和`Global`。`Focal`蒸馏分离图像的前景和背景，让学生模型分别关注教师模型的前景和背景部分特征的关键像素；`Global`蒸馏部分重建不同像素之间的关系并将其从教师转移到学生，以补偿`Focal`蒸馏中丢失的全局信息。
+PADDLEDETECTION支持了基于FGD([Focal and Global Knowledge Distillation for Detectors](https://arxiv.org/abs/2111.11837v1))蒸馏的目标检测模型训练过程，FGD蒸馏分为两个部分`Focal`和`Global`。`Focal`蒸馏分离图像的前景和背景，让学生模型分别关注教师模型的前景和背景部分特征的关键像素；`Global`蒸馏部分重建不同像素之间的关系并将其从教师转移到学生，以补偿`Focal`蒸馏中丢失的全局信息。
 
 更换数据集，修改【TODO】配置中的数据配置、类别数，具体可以参考4.1。启动训练：
 

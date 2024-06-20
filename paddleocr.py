@@ -529,7 +529,7 @@ def parse_lang(lang):
 
 def get_model_config(type, version, model_type, lang):
 
-    if type == "OCR":
+    if type == "OCR": # version：PP-OCRv4；model_type：det；type：OCR；lang：ch
         DEFAULT_MODEL_VERSION = DEFAULT_OCR_MODEL_VERSION
     elif type == "STRUCTURE":
         DEFAULT_MODEL_VERSION = DEFAULT_STRUCTURE_MODEL_VERSION
@@ -924,7 +924,7 @@ class PPStructure(StructureSystem):
         )
 
         params.use_gpu = check_gpu(params.use_gpu)
-
+        params.mode = "structure"
 
         if not params.show_log:
 
@@ -942,7 +942,7 @@ class PPStructure(StructureSystem):
             params.merge_no_span_structure = False
 
         # init model dir
-        det_model_config = get_model_config("OCR", params.ocr_version, "det", det_lang)
+        det_model_config = get_model_config("OCR", params.ocr_version, "det", det_lang) # {'url': 'https://paddleocr.bj.bcebos.com/PP-OCRv4/chinese/ch_PP-OCRv4_det_infer.tar'}
 
         params.det_model_dir, det_url = confirm_model_dir_url(
             params.det_model_dir,
@@ -958,7 +958,7 @@ class PPStructure(StructureSystem):
             rec_model_config["url"],
         )
 
-        table_model_config = get_model_config(
+        table_model_config = get_model_config( # {'dict_path': 'ppocr/utils/dict/table_structure_dict_ch.txt', 'url': 'https://paddleocr.bj.bcebos.com/ppstructure/models/slanet/ch_ppstructure_mobile_v2.0_SLANet_infer.tar'}
             "STRUCTURE", params.structure_version, "table", table_lang
         )
 
@@ -968,7 +968,7 @@ class PPStructure(StructureSystem):
             table_model_config["url"],
         )
 
-        layout_model_config = get_model_config(
+        layout_model_config = get_model_config( # {'dict_path': 'ppocr/utils/dict/layout_dict/layout_cdla_dict.txt', 'url': 'https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_0_fgd_layout_cdla_infer.tar'}
             "STRUCTURE", params.structure_version, "layout", lang
         )
 
@@ -988,19 +988,19 @@ class PPStructure(StructureSystem):
 
         if params.rec_char_dict_path is None:
 
-            params.rec_char_dict_path = str(
+            params.rec_char_dict_path = str( # 'G:\\workspace\\github\\xiedongmingming\\paddle\\PaddleOCR\\ppocr\\utils\\ppocr_keys_v1.txt'
                 Path(__file__).parent / rec_model_config["dict_path"]
             )
 
         if params.table_char_dict_path is None:
 
-            params.table_char_dict_path = str(
+            params.table_char_dict_path = str( # 'G:\\workspace\\github\\xiedongmingming\\paddle\\PaddleOCR\\ppocr\\utils\\dict\\table_structure_dict_ch.txt'
                 Path(__file__).parent / table_model_config["dict_path"]
             )
 
         if params.layout_dict_path is None:
 
-            params.layout_dict_path = str(
+            params.layout_dict_path = str( # 共10类；'G:\\workspace\\github\\xiedongmingming\\paddle\\PaddleOCR\\ppocr\\utils\\dict\\layout_dict\\layout_cdla_dict.txt'
                 Path(__file__).parent / layout_model_config["dict_path"]
             )
 
@@ -1040,15 +1040,21 @@ class PPStructure(StructureSystem):
 
 
 def main(): # 入口程序
+    #
     # for cmd
+    #
     args = parse_args(mMain=True)
 
-    image_dir = args.image_dir
+    image_dir = args.image_dir # 参数中携带的路径
 
     if is_link(image_dir):
+
         download_with_progressbar(image_dir, "tmp.jpg")
+
         image_file_list = ["tmp.jpg"]
+
     else:
+
         image_file_list = get_image_file_list(args.image_dir)
 
     if len(image_file_list) == 0:
@@ -1059,7 +1065,7 @@ def main(): # 入口程序
 
     if args.type == "ocr":
         engine = PaddleOCR(**(args.__dict__))
-    elif args.type == "structure":
+    elif args.type == "structure": # 指定工作模式
         engine = PPStructure(**(args.__dict__))
     else:
         raise NotImplementedError
@@ -1163,7 +1169,7 @@ def main(): # 入口程序
 
                 logger.info("processing {}/{} page:".format(index + 1, len(img_paths)))
 
-                result = engine(img, img_idx=index)
+                result = engine(img, img_idx=index) # 关键步骤
 
                 save_structure_res(result, args.output, img_name, index)
 
@@ -1207,3 +1213,8 @@ def main(): # 入口程序
                 logger.info(item)
 
             logger.info("result save to {}".format(args.output))
+
+
+if __name__ == "__main__":
+
+    main()
