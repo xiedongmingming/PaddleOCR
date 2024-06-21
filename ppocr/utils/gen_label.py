@@ -17,32 +17,53 @@ import json
 
 
 def gen_rec_label(input_path, out_label):
+
     with open(out_label, "w") as out_file:
+
         with open(input_path, "r") as f:
+
             for line in f.readlines():
+
                 tmp = line.strip("\n").replace(" ", "").split(",")
+
                 img_path, label = tmp[0], tmp[1]
+
                 label = label.replace('"', "")
+
                 out_file.write(img_path + "\t" + label + "\n")
 
 
 def gen_det_label(root_path, input_dir, out_label):
+
     with open(out_label, "w") as out_file:
+
         for label_file in os.listdir(input_dir):
+
             img_path = os.path.join(root_path, label_file[3:-4] + ".jpg")
+
             label = []
+
             with open(
                 os.path.join(input_dir, label_file), "r", encoding="utf-8-sig"
             ) as f:
+
                 for line in f.readlines():
+
                     tmp = line.strip("\n\r").replace("\xef\xbb\xbf", "").split(",")
+
                     points = tmp[:8]
+
                     s = []
+
                     for i in range(0, len(points), 2):
+
                         b = points[i : i + 2]
                         b = [int(t) for t in b]
+
                         s.append(b)
+
                     result = {"transcription": tmp[8], "points": s}
+
                     label.append(result)
 
             out_file.write(
@@ -51,7 +72,9 @@ def gen_det_label(root_path, input_dir, out_label):
 
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "--mode",
         type=str,
@@ -75,8 +98,13 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
     if args.mode == "rec":
+
         print("Generate rec label")
+
         gen_rec_label(args.input_path, args.output_label)
+
     elif args.mode == "det":
+
         gen_det_label(args.root_path, args.input_path, args.output_label)

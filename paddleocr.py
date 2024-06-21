@@ -1008,7 +1008,7 @@ class PPStructure(StructureSystem):
 
         super().__init__(params)
 
-    def __call__( # 对外接口
+    def __call__( # 对外接口 -- 真正执行功能的入口
         self,
         img, # 待处理的图片
         return_ocr_result_in_table=False,
@@ -1169,7 +1169,7 @@ def main(): # 入口程序
 
                 logger.info("processing {}/{} page:".format(index + 1, len(img_paths)))
 
-                result = engine(img, img_idx=index) # 关键步骤
+                result = engine(img, img_idx=index)  # ===关键步骤===
 
                 save_structure_res(result, args.output, img_name, index)
 

@@ -113,7 +113,7 @@ class StructureSystem(object):
 
         self.return_word_box = args.return_word_box
 
-    def __call__(self, img, return_ocr_result_in_table=False, img_idx=0):
+    def __call__(self, img, return_ocr_result_in_table=False, img_idx=0): # 对外接口 -- 真正执行功能的入口
 
         time_dict = {
             "image_orientation": 0,
