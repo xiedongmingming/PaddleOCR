@@ -182,7 +182,7 @@ def check_and_read(img_path):
 
                 page = pdf[pg]
 
-                mat = fitz.Matrix(2, 2)
+                mat = fitz.Matrix(2, 2)  # TODO 表示页面长宽都扩大两倍
 
                 pm = page.get_pixmap(matrix=mat, alpha=False)
 

@@ -115,22 +115,22 @@ class LayoutPredictor(object):
 
         else:
 
-            self.input_tensor.copy_from_cpu(img) # <paddle.fluid.libpaddle.PaddleInferTensor object at 0x0000023E7385F630>
+            self.input_tensor.copy_from_cpu(img) # ndarray:(1, 3, 800, 608) <paddle.fluid.libpaddle.PaddleInferTensor object at 0x0000023E7385F630>
 
             self.predictor.run() # 步骤3.4.3：执行推理（父类实现）-- 布局推理执行RUN
 
-            output_names = self.predictor.get_output_names() # ['transpose_0.tmp_0', 'transpose_2.tmp_0', 'transpose_4.tmp_0', 'transpose_6.tmp_0', 'transpose_1.tmp_0', 'transpose_3.tmp_0', 'transpose_5.tmp_0', 'transpose_7.tmp_0']
+            output_names = self.predictor.get_output_names() # 8：['transpose_0.tmp_0', 'transpose_2.tmp_0', 'transpose_4.tmp_0', 'transpose_6.tmp_0', 'transpose_1.tmp_0', 'transpose_3.tmp_0', 'transpose_5.tmp_0', 'transpose_7.tmp_0']
 
-            num_outs = int(len(output_names) / 2)
+            num_outs = int(len(output_names) / 2) # 4
 
-            for out_idx in range(num_outs):
+            for out_idx in range(num_outs):  #
 
-                np_score_list.append(
+                np_score_list.append(  # 0,1,2,3：SCORE
                     self.predictor.get_output_handle(
                         output_names[out_idx]
                     ).copy_to_cpu()
                 )
-                np_boxes_list.append(
+                np_boxes_list.append(  # 4,5,6,7：BOXES
                     self.predictor.get_output_handle(
                         output_names[out_idx + num_outs]
                     ).copy_to_cpu()
@@ -138,7 +138,7 @@ class LayoutPredictor(object):
 
         preds = dict(boxes=np_score_list, boxes_num=np_boxes_list)
 
-        post_preds = self.postprocess_op(ori_im, img, preds)
+        post_preds = self.postprocess_op(ori_im, img, preds)  # 步骤3.4.4：执行推理（父类实现）-- 结果出来
 
         elapse = time.time() - starttime
 

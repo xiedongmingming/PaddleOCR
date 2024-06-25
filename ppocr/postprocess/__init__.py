@@ -59,7 +59,12 @@ from .ct_postprocess import CTPostProcess
 from .drrg_postprocess import DRRGPostprocess
 from .rec_postprocess import CANLabelDecode
 
-
+# postprocess_params = {
+#     "name": "PicoDetPostProcess",
+#     "layout_dict_path": args.layout_dict_path,
+#     "score_threshold": args.layout_score_threshold,
+#     "nms_threshold": args.layout_nms_threshold,
+# }
 def build_post_process(config, global_config=None):
 
     support_dict = [
@@ -107,7 +112,7 @@ def build_post_process(config, global_config=None):
 
     config = copy.deepcopy(config)
 
-    module_name = config.pop("name")
+    module_name = config.pop("name")  # PicoDetPostProcess
 
     if module_name == "None":
 
@@ -121,6 +126,6 @@ def build_post_process(config, global_config=None):
         "post process only support {}".format(support_dict)
     )
 
-    module_class = eval(module_name)(**config)
+    module_class = eval(module_name)(**config)  # 生成配置类
 
     return module_class

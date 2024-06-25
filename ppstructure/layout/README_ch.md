@@ -172,7 +172,7 @@ wget https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_
 wget https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_0_fgd_layout_infer.tar
 ```
 
-如果测试图片为中文，可以下载中文CDLA数据集的预训练模型，识别10类文档区域：TABLE、FIGURE、FIGURE CAPTION、TABLE、TABLE CAPTION、HEADER、FOOTER、REFERENCE、EQUATION，在[版面分析模型](../docs/models_list.md)中下载`picodet_lcnet_x1_0_fgd_layout_cdla`模型的训练模型和推理模型。如果只检测图片中的表格区域，可以下载表格数据集的预训练模型，在[版面分析模型](../docs/models_list.md)中下载`picodet_lcnet_x1_0_fgd_layout_table`模型的训练模型和推理模型。
+如果测试图片为中文，可以下载中文CDLA数据集的预训练模型，识别10类文档区域：TABLE、FIGURE、FIGURE CAPTION、TABLE、TABLE CAPTION、HEADER、FOOTER、REFERENCE、EQUATION，在[版面分析模型](../docs/models_list.md)中下载`PICODET_LCNET_X1_0_FGD_LAYOUT_CDLA`模型的训练模型和推理模型。如果只检测图片中的表格区域，可以下载表格数据集的预训练模型，在[版面分析模型](../docs/models_list.md)中下载`PICODET_LCNET_X1_0_FGD_LAYOUT_TABLE`模型的训练模型和推理模型。
 
 ### 5.1. 启动训练
 
@@ -183,7 +183,7 @@ wget https://paddleocr.bj.bcebos.com/ppstructure/models/layout/picodet_lcnet_x1_
 如果你希望训练自己的数据集，需要修改配置文件中的数据配置、类别数。
 
 
-以`configs/picodet/legacy_model/application/layout_analysis/picodet_lcnet_x1_0_layout.yml` 为例，修改的内容如下所示。
+以`CONFIGS/PICODET/LEGACY_MODEL/APPLICATION/LAYOUT_ANALYSIS/PICODET_LCNET_X1_0_LAYOUT.YML` 为例，修改的内容如下所示。
 
 ```yaml
 metric: COCO
@@ -228,7 +228,7 @@ python3 tools/train.py \
     -c configs/picodet/legacy_model/application/layout_analysis/picodet_lcnet_x1_0_layout.yml \
     --eval
 
-# 多卡训练，通过--gpus参数指定卡号
+# 多卡训练，通过--GPUS参数指定卡号
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 python3 -m paddle.distributed.launch --gpus '0,1,2,3'  tools/train.py \
     -c configs/picodet/legacy_model/application/layout_analysis/picodet_lcnet_x1_0_layout.yml \
@@ -247,13 +247,13 @@ python3 -m paddle.distributed.launch --gpus '0,1,2,3'  tools/train.py \
 [08/15 04:04:12] ppdet.engine INFO: Epoch: [0] [  60/1929] learning_rate: 0.112000 loss_vfl: 0.630989 loss_bbox: 0.859183 loss_dfl: 0.384702 loss: 1.883143 eta: 1 day, 19:01:29 batch_cost: 1.2177 data_cost: 0.0006 ips: 19.7087 images/s
 ```
 
-- `--eval`表示训练的同时，进行评估， 评估过程中默认将最佳模型，保存为 `output/picodet_lcnet_x1_0_layout/best_accuracy` 。
+- `--eval`：表示训练的同时，进行评估， 评估过程中默认将最佳模型，保存为 `OUTPUT/PICODET_LCNET_X1_0_LAYOUT/BEST_ACCURACY` 。
 
 **注意，预测/评估时的配置文件请务必与训练一致。**
 
 ### 5.2. FGD蒸馏训练
 
-PADDLEDETECTION支持了基于FGD([Focal and Global Knowledge Distillation for Detectors](https://arxiv.org/abs/2111.11837v1))蒸馏的目标检测模型训练过程，FGD蒸馏分为两个部分`Focal`和`Global`。`Focal`蒸馏分离图像的前景和背景，让学生模型分别关注教师模型的前景和背景部分特征的关键像素；`Global`蒸馏部分重建不同像素之间的关系并将其从教师转移到学生，以补偿`Focal`蒸馏中丢失的全局信息。
+PADDLEDETECTION支持了基于FGD（[Focal and Global Knowledge Distillation for Detectors](https://arxiv.org/abs/2111.11837v1)）蒸馏的目标检测模型训练过程，FGD蒸馏分为两个部分`FOCAL`和`GLOBAL`。`FOCAL`蒸馏分离图像的前景和背景，让学生模型分别关注教师模型的前景和背景部分特征的关键像素；`GLOBAL`蒸馏部分重建不同像素之间的关系并将其从教师转移到学生，以补偿`FOCAL`蒸馏中丢失的全局信息。
 
 更换数据集，修改【TODO】配置中的数据配置、类别数，具体可以参考4.1。启动训练：
 
@@ -266,17 +266,17 @@ python3 tools/train.py \
     --eval
 ```
 
-- `-c`: 指定模型配置文件。
-- `--slim_config`: 指定压缩策略配置文件。
+- `-c`：指定模型配置文件。
+- `--slim_config`：指定压缩策略配置文件。
 
 ## 6. 模型评估与预测
 
 ### 6.1. 指标评估
 
-训练中模型参数默认保存在`output/picodet_lcnet_x1_0_layout`目录下。在评估指标时，需要设置`weights`指向保存的参数文件。评估数据集可以通过 `configs/picodet/legacy_model/application/layout_analysis/picodet_lcnet_x1_0_layout.yml`  修改`EvalDataset`中的 `image_dir`、`anno_path`和`dataset_dir` 设置。
+训练中模型参数默认保存在`OUTPUT/PICODET_LCNET_X1_0_LAYOUT`目录下。在评估指标时，需要设置`WEIGHTS`指向保存的参数文件。评估数据集可以通过 `configs/picodet/legacy_model/application/layout_analysis/picodet_lcnet_x1_0_layout.yml`  修改`EvalDataset`中的 `image_dir`、`anno_path`和`dataset_dir` 设置。
 
 ```bash
-# GPU 评估， weights 为待测权重
+# GPU评估，WEIGHTS为待测权重
 python3 tools/eval.py \
     -c configs/picodet/legacy_model/application/layout_analysis/picodet_lcnet_x1_0_layout.yml \
     -o weights=./output/picodet_lcnet_x1_0_layout/best_model
@@ -301,7 +301,7 @@ python3 tools/eval.py \
 [08/15 07:07:09] ppdet.engine INFO: Best test bbox ap is 0.935.
 ```
 
-若使用**提供的预训练模型进行评估**，或使用**FGD蒸馏训练的模型**，更换`weights`模型路径，执行如下命令进行评估：
+若使用**提供的预训练模型进行评估**，或使用**FGD蒸馏训练的模型**，更换`WEIGHTS`模型路径，执行如下命令进行评估：
 
 ```
 python3 tools/eval.py \
@@ -310,9 +310,9 @@ python3 tools/eval.py \
     -o weights=output/picodet_lcnet_x2_5_layout/best_model
 ```
 
-- `-c`: 指定模型配置文件。
-- `--slim_config`: 指定蒸馏策略配置文件。
-- `-o weights`: 指定蒸馏算法训好的模型路径。
+- `-c`：指定模型配置文件。
+- `--slim_config`：指定蒸馏策略配置文件。
+- `-o weights`：指定蒸馏算法训好的模型路径。
 
 ### 6.2 测试版面分析结果
 
@@ -352,9 +352,9 @@ python3 tools/infer.py \
 
 ### 7.1 模型导出
 
-inference 模型（`paddle.jit.save`保存的模型） 一般是模型训练，把模型结构和模型参数保存在文件中的固化模型，多用于预测部署场景。 训练过程中保存的模型是checkpoints模型，保存的只有模型的参数，多用于恢复训练等。 与checkpoints模型相比，inference 模型会额外保存模型的结构信息，在预测部署、加速推理上性能优越，灵活方便，适合于实际系统集成。
+INFERENCE模型（`PADDLE.JIT.SAVE`保存的模型）一般是模型训练，把模型结构和模型参数保存在文件中的固化模型，多用于预测部署场景。训练过程中保存的模型是CHECKPOINTS模型，保存的只有模型的参数，多用于恢复训练等。与CHECKPOINTS模型相比，INFERENCE模型会额外保存模型的结构信息，在预测部署、加速推理上性能优越，灵活方便，适合于实际系统集成。
 
-版面分析模型转inference模型步骤如下：
+版面分析模型转INFERENCE模型步骤如下：
 
 ```bash
 python3 tools/export_model.py \
@@ -370,12 +370,12 @@ python3 tools/export_model.py \
 
 ```
 output_inference/picodet_lcnet_x1_0_layout/
-    ├── model.pdiparams         # inference模型的参数文件
-    ├── model.pdiparams.info    # inference模型的参数信息，可忽略
-    └── model.pdmodel           # inference模型的模型结构文件
+    ├── model.pdiparams         # INFERENCE模型的参数文件
+    ├── model.pdiparams.info    # INFERENCE模型的参数信息，可忽略
+    └── model.pdmodel           # INFERENCE模型的模型结构文件
 ```
 
-若使用**提供的预训练模型转Inference模型**，或使用**FGD蒸馏训练的模型**，更换`weights`模型路径，模型转inference模型步骤如下：
+若使用**提供的预训练模型转INFERENCE模型**，或使用**FGD蒸馏训练的模型**，更换`WEIGHTS`模型路径，模型转INFERENCE模型步骤如下：
 
 ```bash
 python3 tools/export_model.py \
@@ -389,7 +389,7 @@ python3 tools/export_model.py \
 
 ### 7.2 模型推理
 
-若使用**提供的推理训练模型推理**，或使用**FGD蒸馏训练的模型**，更换`model_dir`推理模型路径，执行如下命令进行推理：
+若使用**提供的推理训练模型推理**，或使用**FGD蒸馏训练的模型**，更换`MODEL_DIR`推理模型路径，执行如下命令进行推理：
 
 ```bash
 python3 deploy/python/infer.py \
@@ -400,7 +400,7 @@ python3 deploy/python/infer.py \
 
 - --device：指定GPU、CPU设备
 
-模型推理完成，会看到以下log输出
+模型推理完成，会看到以下LOG输出
 
 ```
 ------------------------------------------
@@ -429,11 +429,11 @@ average latency time(ms): 2196.00, QPS: 0.455373
 preprocess_time(ms): 2172.50, inference_time(ms): 11.90, postprocess_time(ms): 11.60
 ```
 
-- Model：模型结构
+- Model Arch：模型结构
 - Transform Order：预处理操作
-- class_id、confidence、left_top、right_bottom：分别表示类别id、置信度、左上角坐标、右下角坐标
-- save result to：可视化版面分析结果保存路径，默认保存到`./output`文件夹
-- Inference Time Info：推理时间，其中preprocess_time表示预处理耗时，inference_time表示模型预测耗时，postprocess_time表示后处理耗时
+- class_id、confidence、left_top、right_bottom：分别表示类别ID、置信度、左上角坐标、右下角坐标
+- save result to：可视化版面分析结果保存路径，默认保存到`./OUTPUT`文件夹
+- Inference Time Info：推理时间，其中PREPROCESS_TIME表示预处理耗时，INFERENCE_TIME表示模型预测耗时，POSTPROCESS_TIME表示后处理耗时
 
 可视化版面结果如下图所示
 
