@@ -27,12 +27,14 @@ def points2polygon(points):
         polygon (Polygon): A polygon object.
     """
     if isinstance(points, list):
+
         points = np.array(points)
 
     assert isinstance(points, np.ndarray)
     assert (points.size % 2 == 0) and (points.size >= 8)
 
     point_mat = points.reshape([-1, 2])
+
     return Polygon(point_mat)
 
 
@@ -53,6 +55,7 @@ def poly_intersection(poly_det, poly_gt, buffer=0.0001):
         poly_inter = poly_det & poly_gt
     else:
         poly_inter = poly_det.buffer(buffer) & poly_gt.buffer(buffer)
+
     return poly_inter.area, poly_inter
 
 
@@ -71,12 +74,16 @@ def poly_union(poly_det, poly_gt):
 
     area_det = poly_det.area
     area_gt = poly_gt.area
+
     area_inters, _ = poly_intersection(poly_det, poly_gt)
+
     return area_det + area_gt - area_inters
 
 
 def valid_boundary(x, with_score=True):
+
     num = len(x)
+
     if num < 8:
         return False
     if num % 2 == 0 and (not with_score):
@@ -99,7 +106,9 @@ def boundary_iou(src, target):
     """
     assert valid_boundary(src, False)
     assert valid_boundary(target, False)
+
     src_poly = points2polygon(src)
+
     target_poly = points2polygon(target)
 
     return poly_iou(src_poly, target_poly)
@@ -117,30 +126,46 @@ def poly_iou(poly_det, poly_gt):
     """
     assert isinstance(poly_det, Polygon)
     assert isinstance(poly_gt, Polygon)
+
     area_inters, _ = poly_intersection(poly_det, poly_gt)
+
     area_union = poly_union(poly_det, poly_gt)
+
     if area_union == 0:
+
         return 0.0
+
     return area_inters / area_union
 
 
 def poly_nms(polygons, threshold):
+
     assert isinstance(polygons, list)
 
     polygons = np.array(sorted(polygons, key=lambda x: x[-1]))
 
     keep_poly = []
+
     index = [i for i in range(polygons.shape[0])]
 
     while len(index) > 0:
+
         keep_poly.append(polygons[index[-1]].tolist())
+
         A = polygons[index[-1]][:-1]
+
         index = np.delete(index, -1)
+
         iou_list = np.zeros((len(index),))
+
         for i in range(len(index)):
+
             B = polygons[index[i]][:-1]
+
             iou_list[i] = boundary_iou(A, B)
+
         remove_index = np.where(iou_list > threshold)
+
         index = np.delete(index, remove_index)
 
     return keep_poly

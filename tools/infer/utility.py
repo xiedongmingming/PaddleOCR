@@ -29,15 +29,19 @@ from ppocr.utils.logging import get_logger
 
 
 def str2bool(v):
+
     return v.lower() in ("true", "yes", "t", "y", "1")
 
 
 def str2int_tuple(v):
+
     return tuple([int(i.strip()) for i in v.split(",")])
 
 
 def init_args():
+
     parser = argparse.ArgumentParser()
+
     # params for prediction engine
     parser.add_argument("--use_gpu", type=str2bool, default=True)
     parser.add_argument("--use_xpu", type=str2bool, default=False)
@@ -162,7 +166,9 @@ def init_args():
 
 
 def parse_args():
+
     parser = init_args()
+
     return parser.parse_args()
 
 

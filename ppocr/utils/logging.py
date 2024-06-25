@@ -43,10 +43,15 @@ def get_logger(name="ppocr", log_file=None, log_level=logging.DEBUG):
         logging.Logger: The expected logger.
     """
     logger = logging.getLogger(name)
+
     if name in logger_initialized:
+
         return logger
+
     for logger_name in logger_initialized:
+
         if name.startswith(logger_name):
+
             return logger
 
     formatter = logging.Formatter(
@@ -55,17 +60,26 @@ def get_logger(name="ppocr", log_file=None, log_level=logging.DEBUG):
 
     stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setFormatter(formatter)
+
     logger.addHandler(stream_handler)
+
     if log_file is not None and dist.get_rank() == 0:
+
         log_file_folder = os.path.split(log_file)[0]
+
         os.makedirs(log_file_folder, exist_ok=True)
+
         file_handler = logging.FileHandler(log_file, "a")
         file_handler.setFormatter(formatter)
+
         logger.addHandler(file_handler)
+
     if dist.get_rank() == 0:
         logger.setLevel(log_level)
     else:
         logger.setLevel(logging.ERROR)
+
     logger_initialized[name] = True
     logger.propagate = False
+
     return logger

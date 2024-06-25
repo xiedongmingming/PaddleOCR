@@ -46,6 +46,7 @@ class ProfilerOptions(object):
     """
 
     def __init__(self, options_str):
+
         assert isinstance(options_str, str)
 
         self._options = {
@@ -57,20 +58,28 @@ class ProfilerOptions(object):
             "exit_on_finished": True,
             "timer_only": True,
         }
+
         self._parse_from_string(options_str)
 
     def _parse_from_string(self, options_str):
+
         for kv in options_str.replace(" ", "").split(";"):
+
             key, value = kv.split("=")
+
             if key == "batch_range":
+
                 value_list = value.replace("[", "").replace("]", "").split(",")
                 value_list = list(map(int, value_list))
+
                 if (
                     len(value_list) >= 2
                     and value_list[0] >= 0
                     and value_list[1] > value_list[0]
                 ):
+
                     self._options[key] = value_list
+
             elif key == "exit_on_finished":
                 self._options[key] = value.lower() in ("yes", "true", "t", "1")
             elif key in ["state", "sorted_key", "tracer_option", "profile_path"]:
@@ -79,8 +88,11 @@ class ProfilerOptions(object):
                 self._options[key] = value
 
     def __getitem__(self, name):
+
         if self._options.get(name, None) is None:
+
             raise ValueError("ProfilerOptions does not have an option named %s." % name)
+
         return self._options[name]
 
 
@@ -94,6 +106,7 @@ def add_profiler_step(options_str=None):
                          Default is None, and the profiler is disabled.
     """
     if options_str is None:
+
         return
 
     global _prof
@@ -101,13 +114,16 @@ def add_profiler_step(options_str=None):
     global _profiler_options
 
     if _profiler_options is None:
+
         _profiler_options = ProfilerOptions(options_str)
     # profile : https://www.paddlepaddle.org.cn/documentation/docs/zh/guides/performance_improving/profiling_model.html#chakanxingnengshujudetongjibiaodan
     # timer_only = True  only the model's throughput and time overhead are displayed
     # timer_only = False calling summary can print a statistical form that presents performance data from different perspectives.
     # timer_only = False the output Timeline information can be found in the profiler_log directory
     if _prof is None:
+
         _timer_only = str(_profiler_options["timer_only"]) == str(True)
+
         _prof = profiler.Profiler(
             scheduler=(
                 _profiler_options["batch_range"][0],
@@ -121,10 +137,14 @@ def add_profiler_step(options_str=None):
         _prof.step()
 
     if _profiler_step_id == _profiler_options["batch_range"][1]:
+
         _prof.stop()
         _prof.summary(op_detail=True, thread_sep=False, time_unit="ms")
+
         _prof = None
+
         if _profiler_options["exit_on_finished"]:
+
             sys.exit(0)
 
     _profiler_step_id += 1

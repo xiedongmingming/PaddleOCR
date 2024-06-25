@@ -66,33 +66,34 @@ class LayoutPredictor(object):
         self.postprocess_op = build_post_process(postprocess_params)
 
         (
-            self.predictor,
-            self.input_tensor,
-            self.output_tensors,
-            self.config,
+            self.predictor,  # <paddle.fluid.libpaddle.PaddleInferPredictor object at 0x000001F4BC762A70>
+            self.input_tensor,  # <paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4B7CB8330>
+            self.output_tensors, # 8个：[<paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4AF4FBBF0>, <paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4AF4FBA70>, <paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4AF4FA330>, <paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4AF4F94F0>, <paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4AF4FB5F0>, <paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4AF4FB670>, <paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4AF4FA7F0>, <paddle.fluid.libpaddle.PaddleInferTensor object at 0x000001F4AF4FBCB0>]
+            self.config,  # <paddle.fluid.libpaddle.AnalysisConfig object at 0x000001F4ADDCE030>
         ) = utility.create_predictor(args, "layout", logger)
 
         self.use_onnx = args.use_onnx
 
-    def __call__(self, img): # 对外接口 -- 真正执行功能的入口
+    def __call__(self, img): # 步骤3.4.1：执行推理（父类实现）-- 布局推理 对外接口 -- 真正执行功能的入口
 
         ori_im = img.copy()
 
         data = {"image": img}
 
-        data = transform(data, self.preprocess_op) # ndarray: (3, 800, 608)
+        data = transform(data, self.preprocess_op) # 步骤3.4.2：执行推理（父类实现）-- 布局推理前置处理 list<ndarray: (3, 800, 608)>
 
-        img = data[0]
+        img = data[0] # ndarray: (3, 800, 608)
 
         if img is None:
 
             return None, 0
 
-        img = np.expand_dims(img, axis=0)
+        img = np.expand_dims(img, axis=0) # ndarray: (1, 3, 800, 608)
 
         img = img.copy()
 
         preds, elapse = 0, 1
+
         starttime = time.time()
 
         np_score_list, np_boxes_list = [], []
@@ -114,11 +115,11 @@ class LayoutPredictor(object):
 
         else:
 
-            self.input_tensor.copy_from_cpu(img)
+            self.input_tensor.copy_from_cpu(img) # <paddle.fluid.libpaddle.PaddleInferTensor object at 0x0000023E7385F630>
 
-            self.predictor.run() # 真正执行预测的接口
+            self.predictor.run() # 步骤3.4.3：执行推理（父类实现）-- 布局推理执行RUN
 
-            output_names = self.predictor.get_output_names()
+            output_names = self.predictor.get_output_names() # ['transpose_0.tmp_0', 'transpose_2.tmp_0', 'transpose_4.tmp_0', 'transpose_6.tmp_0', 'transpose_1.tmp_0', 'transpose_3.tmp_0', 'transpose_5.tmp_0', 'transpose_7.tmp_0']
 
             num_outs = int(len(output_names) / 2)
 

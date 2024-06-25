@@ -24,6 +24,7 @@ import six
 import cv2
 import numpy as np
 import math
+
 from PIL import Image
 
 
@@ -33,133 +34,197 @@ class DecodeImage(object):
     def __init__(
         self, img_mode="RGB", channel_first=False, ignore_orientation=False, **kwargs
     ):
+
         self.img_mode = img_mode
         self.channel_first = channel_first
         self.ignore_orientation = ignore_orientation
 
     def __call__(self, data):
+
         img = data["image"]
+
         if six.PY2:
+
             assert (
                 type(img) is str and len(img) > 0
             ), "invalid input 'img' in DecodeImage"
+
         else:
+
             assert (
                 type(img) is bytes and len(img) > 0
             ), "invalid input 'img' in DecodeImage"
+
         img = np.frombuffer(img, dtype="uint8")
+
         if self.ignore_orientation:
             img = cv2.imdecode(img, cv2.IMREAD_IGNORE_ORIENTATION | cv2.IMREAD_COLOR)
         else:
             img = cv2.imdecode(img, 1)
+
         if img is None:
+
             return None
+
         if self.img_mode == "GRAY":
+
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
         elif self.img_mode == "RGB":
+
             assert img.shape[2] == 3, "invalid shape of image[%s]" % (img.shape)
+
             img = img[:, :, ::-1]
 
         if self.channel_first:
+
             img = img.transpose((2, 0, 1))
 
         data["image"] = img
+
         return data
 
 
-class NormalizeImage(object):
-    """normalize image such as substract mean, divide std"""
+class NormalizeImage(object):  # 图像前置处理2
+    """normalize image such as substract mean, divide std""" # 归一化图像，如减均值，除STD
 
     def __init__(self, scale=None, mean=None, std=None, order="chw", **kwargs):
+
         if isinstance(scale, str):
+
             scale = eval(scale)
+
         self.scale = np.float32(scale if scale is not None else 1.0 / 255.0)
+
         mean = mean if mean is not None else [0.485, 0.456, 0.406]
+
         std = std if std is not None else [0.229, 0.224, 0.225]
 
         shape = (3, 1, 1) if order == "chw" else (1, 1, 3)
+
         self.mean = np.array(mean).reshape(shape).astype("float32")
+
         self.std = np.array(std).reshape(shape).astype("float32")
 
     def __call__(self, data):
+
         img = data["image"]
+
         from PIL import Image
 
         if isinstance(img, Image.Image):
+
             img = np.array(img)
+
         assert isinstance(img, np.ndarray), "invalid input 'img' in NormalizeImage"
+
         data["image"] = (img.astype("float32") * self.scale - self.mean) / self.std
+
         return data
 
 
-class ToCHWImage(object):
-    """convert hwc image to chw image"""
+class ToCHWImage(object):  # 图像前置处理3
+    """convert hwc image to chw image""" # 维度变换
 
     def __init__(self, **kwargs):
+
         pass
 
     def __call__(self, data):
+
         img = data["image"]
+
         from PIL import Image
 
         if isinstance(img, Image.Image):
+
             img = np.array(img)
+
         data["image"] = img.transpose((2, 0, 1))
+
         return data
 
 
 class Fasttext(object):
+
     def __init__(self, path="None", **kwargs):
+
         import fasttext
 
         self.fast_model = fasttext.load_model(path)
 
     def __call__(self, data):
+
+
         label = data["label"]
+
         fast_label = self.fast_model[label]
+
         data["fast_label"] = fast_label
+
         return data
 
 
-class KeepKeys(object):
+class KeepKeys(object): # 图像前置处理4
+
     def __init__(self, keep_keys, **kwargs):
+
         self.keep_keys = keep_keys
 
     def __call__(self, data):
+
         data_list = []
+
         for key in self.keep_keys:
+
             data_list.append(data[key])
+
         return data_list
 
 
 class Pad(object):
+
     def __init__(self, size=None, size_div=32, **kwargs):
+
         if size is not None and not isinstance(size, (int, list, tuple)):
+
             raise TypeError(
                 "Type of target_size is invalid. Now is {}".format(type(size))
             )
+
         if isinstance(size, int):
+
             size = [size, size]
+
         self.size = size
         self.size_div = size_div
 
     def __call__(self, data):
+
         img = data["image"]
+
         img_h, img_w = img.shape[0], img.shape[1]
+
         if self.size:
+
             resize_h2, resize_w2 = self.size
+
             assert (
                 img_h < resize_h2 and img_w < resize_w2
             ), "(h, w) of target size should be greater than (img_h, img_w)"
+
         else:
+
             resize_h2 = max(
                 int(math.ceil(img.shape[0] / self.size_div) * self.size_div),
                 self.size_div,
             )
+
             resize_w2 = max(
                 int(math.ceil(img.shape[1] / self.size_div) * self.size_div),
                 self.size_div,
             )
+
         img = cv2.copyMakeBorder(
             img,
             0,
@@ -169,11 +234,13 @@ class Pad(object):
             cv2.BORDER_CONSTANT,
             value=0,
         )
+
         data["image"] = img
+
         return data
 
 
-class Resize(object):
+class Resize(object): # 图像前置处理1
 
     def __init__(self, size=(640, 640), **kwargs):
 

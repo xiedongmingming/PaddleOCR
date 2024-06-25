@@ -48,11 +48,11 @@ logger = get_logger()
 
 class StructureSystem(object):
 
-    def __init__(self, args):
+    def __init__(self, args): # 步骤2.3：创建解析引擎（初始化父类）：StructureSystem
 
-        self.mode = args.mode
+        self.mode = args.mode # structure
 
-        self.recovery = args.recovery
+        self.recovery = args.recovery #
 
         self.image_orientation_predictor = None
 
@@ -85,17 +85,17 @@ class StructureSystem(object):
 
             if args.layout:
 
-                self.layout_predictor = LayoutPredictor(args)
+                self.layout_predictor = LayoutPredictor(args) # 步骤2.3：创建PREDICTOR
 
                 if args.ocr:
 
-                    self.text_system = TextSystem(args)
+                    self.text_system = TextSystem(args) # 步骤2.4：【可选】OCR识别
 
             if args.table:
 
                 if self.text_system is not None:
 
-                    self.table_system = TableSystem(
+                    self.table_system = TableSystem( # 步骤2.5：【可选】TABLE识别
                         args,
                         self.text_system.text_detector,
                         self.text_system.text_recognizer,
@@ -109,13 +109,13 @@ class StructureSystem(object):
 
             from ppstructure.kie.predict_kie_token_ser_re import SerRePredictor
 
-            self.kie_predictor = SerRePredictor(args)
+            self.kie_predictor = SerRePredictor(args) # 步骤2.6：【可选】TABLE识别
 
         self.return_word_box = args.return_word_box
 
-    def __call__(self, img, return_ocr_result_in_table=False, img_idx=0): # 对外接口 -- 真正执行功能的入口
+    def __call__(self, img, return_ocr_result_in_table=False, img_idx=0): # 步骤3.3：执行推理（父类实现）对外接口 -- 真正执行功能的入口
 
-        time_dict = {
+        time_dict = {  # 表示每个模型的耗时
             "image_orientation": 0,
             "layout": 0,
             "table": 0,
@@ -158,7 +158,7 @@ class StructureSystem(object):
 
             if self.layout_predictor is not None:
 
-                layout_res, elapse = self.layout_predictor(img)
+                layout_res, elapse = self.layout_predictor(img) # 步骤3.4：执行推理（父类实现）-- 布局推理
 
                 time_dict["layout"] += elapse
 
@@ -179,7 +179,7 @@ class StructureSystem(object):
 
             if self.text_system is not None:
 
-                text_res, ocr_time_dict = self._predict_text(img)
+                text_res, ocr_time_dict = self._predict_text(img) # 步骤3.4：执行推理（父类实现）-- OCR推理
 
                 time_dict["det"] += ocr_time_dict["det"]
                 time_dict["rec"] += ocr_time_dict["rec"]
@@ -209,7 +209,7 @@ class StructureSystem(object):
 
                     if self.table_system is not None:
 
-                        res, table_time_dict = self.table_system(
+                        res, table_time_dict = self.table_system( # 步骤3.4：执行推理（父类实现）-- 表格推理
                             roi_img, return_ocr_result_in_table
                         )
 
@@ -243,7 +243,7 @@ class StructureSystem(object):
 
         elif self.mode == "kie":
 
-            re_res, elapse = self.kie_predictor(img)
+            re_res, elapse = self.kie_predictor(img) # 步骤3.4：执行推理（父类实现）-- KIE推理
 
             time_dict["kie"] = elapse
             time_dict["all"] = elapse
@@ -362,7 +362,7 @@ def save_structure_res(res, save_folder, img_name, img_idx=0):
 
         for region in res_cp:
 
-            roi_img = region.pop("img")
+            roi_img = region.pop("img") # 剔除图像数据
 
             f.write("{}\n".format(json.dumps(region)))
 
@@ -370,7 +370,7 @@ def save_structure_res(res, save_folder, img_name, img_idx=0):
                 region["type"].lower() == "table"
                 and len(region["res"]) > 0
                 and "html" in region["res"]
-            ):
+            ): # 表格数据
 
                 excel_path = os.path.join(
                     excel_save_folder, "{}_{}.xlsx".format(region["bbox"], img_idx)
@@ -378,7 +378,7 @@ def save_structure_res(res, save_folder, img_name, img_idx=0):
 
                 to_excel(region["res"]["html"], excel_path)
 
-            elif region["type"].lower() == "figure":
+            elif region["type"].lower() == "figure": # 图片数据
 
                 img_path = os.path.join(
                     excel_save_folder, "{}_{}.jpg".format(region["bbox"], img_idx)

@@ -26,31 +26,47 @@ sys.path.append(os.path.join(__dir__, ""))
 import cv2
 import logging
 import numpy as np
+
 from pathlib import Path
+
 import base64
+
 from io import BytesIO
+
 import pprint
+
 from PIL import Image
+
 from tools.infer import predict_system
 
 
 def _import_file(module_name, file_path, make_importable=False):
+
     spec = importlib.util.spec_from_file_location(module_name, file_path)
+
     module = importlib.util.module_from_spec(spec)
+
     spec.loader.exec_module(module)
+
     if make_importable:
+
         sys.modules[module_name] = module
+
     return module
 
 
 tools = _import_file(
     "tools", os.path.join(__dir__, "tools/__init__.py"), make_importable=True
 )
+
 ppocr = importlib.import_module("ppocr", "paddleocr")
+
 ppstructure = importlib.import_module("ppstructure", "paddleocr")
+
 from ppocr.utils.logging import get_logger
 
 logger = get_logger()
+
 from ppocr.utils.utility import (
     check_and_read,
     get_image_file_list,
@@ -63,11 +79,14 @@ from ppocr.utils.network import (
     is_link,
     confirm_model_dir_url,
 )
+
 from tools.infer.utility import draw_ocr, str2bool, check_gpu
+
 from ppstructure.utility import init_args, draw_structure_result
 from ppstructure.predict_system import StructureSystem, save_structure_res, to_excel
 
 logger = get_logger()
+
 __all__ = [
     "PaddleOCR",
     "PPStructure",
@@ -80,6 +99,7 @@ __all__ = [
 
 SUPPORT_DET_MODEL = ["DB"]
 SUPPORT_REC_MODEL = ["CRNN", "SVTR_LCNet"]
+
 BASE_DIR = os.path.expanduser("~/.paddleocr/")
 
 DEFAULT_OCR_MODEL_VERSION = "PP-OCRv4"
@@ -358,7 +378,7 @@ MODEL_URLS = {
 }
 
 
-def parse_args(mMain=True):
+def parse_args(mMain=True): # 入口程序和各个ENGINE初始化时都会调用
 
     import argparse
 
@@ -391,21 +411,21 @@ def parse_args(mMain=True):
         " 2. PP-StructureV2 Support ch and en table structure model.",
     )
 
-    for action in parser._actions:
+    for action in parser._actions: # ？？？？
 
-        if action.dest in [
+        if action.dest in [ # 参数名
             "rec_char_dict_path",
             "table_char_dict_path",
             "layout_dict_path",
         ]:
 
-            action.default = None
+            action.default = None # 默认行为？
 
-    if mMain:
+    if mMain: # 入口程序
 
         return parser.parse_args()
 
-    else:
+    else: # 各个ENGINE初始化
 
         inference_args_dict = {}
 
@@ -510,7 +530,7 @@ def parse_lang(lang):
         lang = "devanagari"
 
     assert (
-        lang in MODEL_URLS["OCR"][DEFAULT_OCR_MODEL_VERSION]["rec"]
+        lang in MODEL_URLS["OCR"][DEFAULT_OCR_MODEL_VERSION]["rec"] # ？？？确保是OCR支持的语言
     ), "param lang must in {}, but got {}".format(
         MODEL_URLS["OCR"][DEFAULT_OCR_MODEL_VERSION]["rec"].keys(), lang
     )
@@ -670,7 +690,7 @@ def check_img(img, alpha_color=(255, 255, 255)):
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
     # four channel image array.shape:h,w,c
-    if isinstance(img, np.ndarray) and len(img.shape) == 3 and img.shape[2] == 4:
+    if isinstance(img, np.ndarray) and len(img.shape) == 3 and img.shape[2] == 4: # 第三维为RGB通道
 
         img = alpha_to_color(img, alpha_color)
 
@@ -679,7 +699,7 @@ def check_img(img, alpha_color=(255, 255, 255)):
 
 class PaddleOCR(predict_system.TextSystem):
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs): # 步骤2.1：创建解析引擎（根据任务类型）
         """
         paddleocr package
         args:
@@ -911,11 +931,11 @@ class PaddleOCR(predict_system.TextSystem):
 
 class PPStructure(StructureSystem):
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs): # 步骤2.1：创建解析引擎（初始化各个模型配置以及模型的对应的DICT）
 
-        params = parse_args(mMain=False)
+        params = parse_args(mMain=False) # NAMESPACE（所有参数的默认值）
 
-        params.__dict__.update(**kwargs)
+        params.__dict__.update(**kwargs) # 重新赋值
 
         assert (
             params.structure_version in SUPPORT_STRUCTURE_MODEL_VERSION
@@ -930,7 +950,7 @@ class PPStructure(StructureSystem):
 
             logger.setLevel(logging.INFO)
 
-        lang, det_lang = parse_lang(params.lang)
+        lang, det_lang = parse_lang(params.lang) # lang、det_lang、table_lang
 
         if lang == "ch":
             table_lang = "ch"
@@ -950,7 +970,7 @@ class PPStructure(StructureSystem):
             det_model_config["url"],
         )
 
-        rec_model_config = get_model_config("OCR", params.ocr_version, "rec", lang)
+        rec_model_config = get_model_config("OCR", params.ocr_version, "rec", lang) # {'dict_path': './ppocr/utils/ppocr_keys_v1.txt', 'url': 'https://paddleocr.bj.bcebos.com/PP-OCRv4/chinese/ch_PP-OCRv4_rec_infer.tar'}
 
         params.rec_model_dir, rec_url = confirm_model_dir_url(
             params.rec_model_dir,
@@ -1006,9 +1026,9 @@ class PPStructure(StructureSystem):
 
         logger.debug(params)
 
-        super().__init__(params)
+        super().__init__(params)  # 步骤2.2：创建解析引擎（初始化父类）：StructureSystem
 
-    def __call__( # 对外接口 -- 真正执行功能的入口
+    def __call__( # 步骤3.1：执行推理      对外接口 -- 真正执行功能的入口
         self,
         img, # 待处理的图片
         return_ocr_result_in_table=False,
@@ -1034,18 +1054,18 @@ class PPStructure(StructureSystem):
 
             return res_list
 
-        res, _ = super().__call__(img, return_ocr_result_in_table, img_idx=img_idx)
+        res, _ = super().__call__(img, return_ocr_result_in_table, img_idx=img_idx) # 步骤3.2：执行推理（父类实现）
 
         return res
 
 
-def main(): # 入口程序
+def main():  # 入口程序
     #
     # for cmd
     #
-    args = parse_args(mMain=True)
+    args = parse_args(mMain=True)  # 步骤1：参数解析
 
-    image_dir = args.image_dir # 参数中携带的路径
+    image_dir = args.image_dir  # 参数中携带的路径
 
     if is_link(image_dir):
 
@@ -1064,9 +1084,9 @@ def main(): # 入口程序
         return
 
     if args.type == "ocr":
-        engine = PaddleOCR(**(args.__dict__))
+        engine = PaddleOCR(**(args.__dict__))  # 步骤2：创建解析引擎（根据任务类型）
     elif args.type == "structure": # 指定工作模式
-        engine = PPStructure(**(args.__dict__))
+        engine = PPStructure(**(args.__dict__))  # 步骤2：创建解析引擎（根据任务类型）
     else:
         raise NotImplementedError
 
@@ -1114,7 +1134,7 @@ def main(): # 入口程序
 
         elif args.type == "structure":
 
-            img, flag_gif, flag_pdf = check_and_read(img_path)
+            img, flag_gif, flag_pdf = check_and_read(img_path)  # 检查目标文件时IMG、GIF、PDF哪种
 
             if not flag_gif and not flag_pdf:
 
@@ -1163,15 +1183,15 @@ def main(): # 入口程序
 
                     img_paths.append([pdf_img_path, pdf_img])
 
-            all_res = []
+            all_res = [] # 存放所有结果
 
-            for index, (new_img_path, img) in enumerate(img_paths):
+            for index, (new_img_path, img) in enumerate(img_paths):  # 遍历所有图片
 
                 logger.info("processing {}/{} page:".format(index + 1, len(img_paths)))
 
-                result = engine(img, img_idx=index)  # ===关键步骤===
+                result = engine(img, img_idx=index)  # 步骤3：执行推理
 
-                save_structure_res(result, args.output, img_name, index)
+                save_structure_res(result, args.output, img_name, index) # 步骤4：保存结果
 
                 if args.recovery and result != []:
 

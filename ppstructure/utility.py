@@ -32,8 +32,10 @@ import math
 
 def init_args():
 
-    parser = infer_args()
+    parser = infer_args() # INFER相关的参数
 
+    ##############################################################################
+    # 添加额外参数
     # params for output
     parser.add_argument("--output", type=str, default="./output")
 
