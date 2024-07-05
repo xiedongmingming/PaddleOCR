@@ -308,7 +308,7 @@ python3 tools/infer_table.py -c configs/table/SLANet.yml -o Global.pretrained_mo
 
 预测图片：
 
-![](../../ppstructure/docs/table/table.jpg)
+![](../../ppstructure/output/docs/table/table.jpg)
 
 得到输入图像的预测结果：
 
@@ -363,7 +363,7 @@ python3.7 table/predict_structure.py \
 
 预测图片：
 
-![](../../ppstructure/docs/table/table.jpg)
+![](../../ppstructure/output/docs/table/table.jpg)
 
 得到输入图像的预测结果：
 

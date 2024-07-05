@@ -931,11 +931,11 @@ class PaddleOCR(predict_system.TextSystem):
 
 class PPStructure(StructureSystem):
 
-    def __init__(self, **kwargs): # 步骤2.1：创建解析引擎（初始化各个模型配置以及模型的对应的DICT）
+    def __init__(self, **kwargs):  # 步骤2.1：创建解析引擎（初始化各个模型配置以及模型的对应的DICT）
 
-        params = parse_args(mMain=False) # NAMESPACE（所有参数的默认值）
+        params = parse_args(mMain=False)  # NAMESPACE（所有参数的默认值）
 
-        params.__dict__.update(**kwargs) # 重新赋值
+        params.__dict__.update(**kwargs)  # 重新赋值
 
         assert (
             params.structure_version in SUPPORT_STRUCTURE_MODEL_VERSION
@@ -982,7 +982,7 @@ class PPStructure(StructureSystem):
             "STRUCTURE", params.structure_version, "table", table_lang
         )
 
-        params.table_model_dir, table_url = confirm_model_dir_url(
+        params.table_model_dir, table_url = confirm_model_dir_url( # 'https://paddleocr.bj.bcebos.com/ppstructure/models/slanet/ch_ppstructure_mobile_v2.0_SLANet_infer.tar'
             params.table_model_dir,
             os.path.join(BASE_DIR, "whl", "table"),
             table_model_config["url"],

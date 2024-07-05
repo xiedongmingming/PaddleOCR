@@ -24,9 +24,12 @@ import time
 import datetime
 import paddle
 import paddle.distributed as dist
+
 from tqdm import tqdm
+
 import cv2
 import numpy as np
+
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from ppocr.utils.stats import TrainingStats

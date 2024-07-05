@@ -355,34 +355,48 @@ def main():
         arch_config["algorithm"] in ["SVTR", "CPPD"]
         and arch_config["Head"]["name"] != "MultiHead"
     ):
+
         input_shape = config["Eval"]["dataset"]["transforms"][-2]["SVTRRecResizeImg"][
             "image_shape"
         ]
+
     elif arch_config["algorithm"].lower() == "ABINet".lower():
+
         rec_rs = [
             c
             for c in config["Eval"]["dataset"]["transforms"]
             if "ABINetRecResizeImg" in c
         ]
+
         input_shape = rec_rs[0]["ABINetRecResizeImg"]["image_shape"] if rec_rs else None
+
     else:
+
         input_shape = None
 
     if arch_config["algorithm"] in [
         "Distillation",
     ]:  # distillation model
+
         archs = list(arch_config["Models"].values())
+
         for idx, name in enumerate(model.model_name_list):
+
             sub_model_save_path = os.path.join(save_path, name, "inference")
+
             export_single_model(
                 model.model_list[idx], archs[idx], sub_model_save_path, logger
             )
+
     else:
+
         save_path = os.path.join(save_path, "inference")
+
         export_single_model(
             model, arch_config, save_path, logger, input_shape=input_shape
         )
 
 
 if __name__ == "__main__":
+
     main()
