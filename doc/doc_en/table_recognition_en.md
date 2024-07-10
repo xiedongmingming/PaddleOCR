@@ -317,7 +317,7 @@ python3 tools/infer_table.py -c configs/table/SLANet.yml -o Global.pretrained_mo
 
 Input image:
 
-![](../../ppstructure/docs/table/table.jpg)
+![](../../ppstructure/output/docs/table/table.jpg)
 
 Get the prediction result of the input image:
 
@@ -373,7 +373,7 @@ python3.7 table/predict_structure.py \
 
 Input image:
 
-![](../../ppstructure/docs/table/table.jpg)
+![](../../ppstructure/output/docs/table/table.jpg)
 
 Get the prediction result of the input image:
 
